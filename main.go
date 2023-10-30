@@ -41,14 +41,15 @@ func main() {
 
 	response, err := http.Get(apiURL)
 	if err != nil {
-		fmt.Println("Ошибка при запросе API:", err)
+		log.Error("Ошибка при запросе API", err)
+
 		return
 	}
 	defer response.Body.Close()
 
 	var categories []Category
 	if err := json.NewDecoder(response.Body).Decode(&categories); err != nil {
-		fmt.Println("Ошибка при декодировании JSON:", err)
+		log.Error("Ошибка при декодировании JSON:", err)
 		return
 	}
 
@@ -73,7 +74,6 @@ func processCategory(db *sql.DB, category Category, wg *sync.WaitGroup) {
 
 	pageID, err := savePageDB(db, apiURL)
 	if err != nil {
-		fmt.Println("Ошибка при сохранении информации о странице:", err)
 		log.Error("Ошибка при сохранении информации о странице:", err)
 		return
 	}
@@ -82,7 +82,6 @@ func processCategory(db *sql.DB, category Category, wg *sync.WaitGroup) {
 
 	response, err := http.Get(apiURL)
 	if err != nil {
-		fmt.Println("Ошибка при запросе API:", err)
 		log.Error("Ошибка при запросе API", err)
 		return
 	}
