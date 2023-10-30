@@ -8,7 +8,8 @@ import (
 var appConfig Config
 
 type Config struct {
-	Token string
+	Token  string `json:"token"`
+	ChatId int64  `json:"chatId"`
 }
 
 func readConfig() {
@@ -23,5 +24,16 @@ func readConfig() {
 	err = decoder.Decode(&appConfig)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func setLogParam() {
+	log.Out = os.Stdout
+
+	file, err := os.OpenFile("./logs/logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		log.Out = file
+	} else {
+		log.Info("Ошибка создания файла логов, используйте stderr")
 	}
 }
