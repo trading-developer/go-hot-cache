@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"math"
+	"sync"
 	"time"
 )
+
+var dbMutex sync.Mutex
 
 func initializeDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "requests.db")
@@ -44,6 +47,8 @@ func initializeDB() (*sql.DB, error) {
 }
 
 func saveRequestDB(db *sql.DB, pageID int64, status int, elapsedTime time.Duration) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	roundedElapsedTime := math.Round(elapsedTime.Seconds()*1000) / 1000
 	insertSQL := "INSERT INTO requests (page_id, status, elapsed_time, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
 	_, err := db.Exec(insertSQL, pageID, status, roundedElapsedTime)
@@ -53,6 +58,8 @@ func saveRequestDB(db *sql.DB, pageID int64, status int, elapsedTime time.Durati
 }
 
 func savePageDB(db *sql.DB, url string) (int64, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 	var pageID int64
 	err := db.QueryRow("SELECT id FROM pages WHERE url = ?", url).Scan(&pageID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
