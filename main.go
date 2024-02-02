@@ -128,7 +128,7 @@ func sendTgStats(db *sql.DB) {
 		log.Panic("Ошибка инициализации клиента tg:", err)
 	}
 
-	msg := tgbotapi.NewMessage(appConfig.ChatId, message)
+	msg := tgbotapi.NewMessageToChannel(appConfig.ChatId, message)
 	_, err = bot.Send(msg)
 	if err != nil {
 		log.Panic("Ошибка отправки сообщения в tg:", err)

@@ -9,7 +9,7 @@ var appConfig Config
 
 type Config struct {
 	Token  string `json:"token"`
-	ChatId int64  `json:"chatId"`
+	ChatId string `json:"chatId"`
 }
 
 func readConfig() {
