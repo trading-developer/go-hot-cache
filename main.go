@@ -18,6 +18,10 @@ type Category struct {
 	Children []Category `json:"children"`
 }
 
+var otherLinks = []string{
+	"https://mageo.ru/api/v1/home-page-data",
+}
+
 var log = logrus.New()
 var startTime = time.Now()
 
@@ -46,6 +50,10 @@ func main() {
 		return
 	}
 	defer response.Body.Close()
+
+	for _, link := range otherLinks {
+		processLink(db, link)
+	}
 
 	var categories []Category
 	if err := json.NewDecoder(response.Body).Decode(&categories); err != nil {
@@ -133,6 +141,30 @@ func sendTgStats(db *sql.DB) {
 	if err != nil {
 		log.Panic("Ошибка отправки сообщения в tg:", err)
 	}
+}
+
+func processLink(db *sql.DB, link string) {
+
+	fmt.Printf("Processing link: %s\n", link)
+
+	pageID, err := savePageDB(db, link)
+	if err != nil {
+		log.Error("Ошибка при сохранении информации о странице:", err)
+		return
+	}
+
+	start := time.Now()
+
+	response, err := http.Get(link)
+	if err != nil {
+		log.Error("Ошибка при запросе API", err)
+		return
+	}
+	defer response.Body.Close()
+
+	elapsedTime := time.Since(start)
+
+	saveRequestDB(db, pageID, response.StatusCode, elapsedTime)
 }
 
 func getTopSlowPages(db *sql.DB) []PageInfo {
